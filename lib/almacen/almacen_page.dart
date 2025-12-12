@@ -560,220 +560,272 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
     cantidadController.addListener(calcularPrecioVenta);
     margenController.addListener(calcularPrecioVenta);
 
-    showDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                const Color(0xFFFCE4EC),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF9C27B0).withOpacity(0.3),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
+      barrierLabel: 'Agregar Producto',
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 450),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,
+                    const Color(0xFFF3E5F5),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF9C27B0).withOpacity(0.3),
+                    blurRadius: 50,
+                    offset: const Offset(0, 20),
+                    spreadRadius: 5,
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.8),
+                  width: 2,
+                ),
               ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header con icono
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF9C27B0),
-                          const Color(0xFFE91E63),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF9C27B0).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header con diseño curvo
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF9C27B0),
+                                const Color(0xFFE91E63),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                              bottomLeft: Radius.circular(30),
+                              bottomRight: Radius.circular(30),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFE91E63).withOpacity(0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          margin: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.4),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add_shopping_cart_rounded,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Nuevo Producto',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Agrega inventario fácilmente ✨',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.add_shopping_cart_rounded,
-                      color: Colors.white,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Título
-                  const Text(
-                    'Agregar Producto',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF9C27B0),
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Completa la información del nuevo producto',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black.withOpacity(0.6),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Campo: Código de Barras
-                  _buildModernTextField(
-                    controller: codigoController,
-                    label: 'Código de Barras',
-                    hint: 'Ingresa el código',
-                    icon: Icons.qr_code_scanner_rounded,
-                    keyboardType: TextInputType.number,
-                    color: const Color(0xFF9C27B0),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Campo: Nombre del Producto
-                  _buildModernTextField(
-                    controller: nombreController,
-                    label: 'Nombre del Producto',
-                    hint: 'Ej: Coca Cola 2L',
-                    icon: Icons.inventory_2_rounded,
-                    color: const Color(0xFFE91E63),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Separador visual
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                const Color(0xFFFF6F00).withOpacity(0.3),
-                                Colors.transparent,
-                              ],
-                            ),
+                    
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                      child: Column(
+                        children: [
+                          // Sección 1: Datos Básicos
+                          _buildSectionTitle('📦 DATOS DEL PRODUCTO'),
+                          const SizedBox(height: 16),
+                          
+                          // Campo: Código de Barras
+                          _buildModernTextField(
+                            controller: codigoController,
+                            label: 'Código de Barras',
+                            hint: 'Escanea o escribe...',
+                            icon: Icons.qr_code_scanner_rounded,
+                            keyboardType: TextInputType.number,
+                            color: const Color(0xFF9C27B0),
+                            isPrimary: true,
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          '💰 CÁLCULO DE PRECIO',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFFFF6F00),
-                            letterSpacing: 0.5,
+                          const SizedBox(height: 16),
+                          
+                          // Campo: Nombre del Producto
+                          _buildModernTextField(
+                            controller: nombreController,
+                            label: 'Nombre del Producto',
+                            hint: 'Ej: Coca Cola 2L',
+                            icon: Icons.inventory_2_rounded,
+                            color: const Color(0xFFE91E63),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                const Color(0xFFFF6F00).withOpacity(0.3),
-                                Colors.transparent,
-                              ],
-                            ),
+                          const SizedBox(height: 24),
+                          
+                          // Sección 2: Costos y Cantidades
+                          _buildSectionTitle('💰 COSTOS Y CANTIDAD'),
+                          const SizedBox(height: 16),
+                          
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildModernTextField(
+                                  controller: costoTotalController,
+                                  label: 'Costo Total',
+                                  hint: 'Bs 0.00',
+                                  icon: Icons.monetization_on_rounded,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  color: const Color(0xFFFF6F00),
+                                  isCompact: true,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildModernTextField(
+                                  controller: cantidadController,
+                                  label: 'Cantidad',
+                                  hint: 'Unidades',
+                                  icon: Icons.onetwothree_rounded,
+                                  keyboardType: TextInputType.number,
+                                  color: const Color(0xFF2196F3),
+                                  isCompact: true,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          
+                          // Campo: Margen de Ganancia (Fijo)
+                          _buildModernTextField(
+                            controller: margenController,
+                            label: 'Margen de Ganancia (%)',
+                            hint: '35',
+                            icon: Icons.lock_rounded,
+                            keyboardType: TextInputType.number,
+                            color: Colors.grey,
+                            readOnly: true,
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Sección 3: Precio Final
+                          _buildSectionTitle('🏷️ PRECIO DE VENTA'),
+                          const SizedBox(height: 12),
+                          
+                          // Campo: Precio de Venta (calculado automáticamente)
+                          _buildCalculatedPriceField(precioVentaController),
+                          const SizedBox(height: 32),
+                          
+                          // Botones de acción
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildCancelButton(context),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                flex: 2,
+                                child: _buildAddButton(
+                                  context,
+                                  codigoController,
+                                  nombreController,
+                                  costoTotalController,
+                                  precioVentaController,
+                                  cantidadController,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Campo: Costo Total
-                  _buildModernTextField(
-                    controller: costoTotalController,
-                    label: 'Costo Total (Bs)',
-                    hint: 'Ej: 2000',
-                    icon: Icons.shopping_cart_rounded,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    color: const Color(0xFFFF6F00),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Campo: Cantidad de Unidades
-                  _buildModernTextField(
-                    controller: cantidadController,
-                    label: 'Cantidad de Unidades',
-                    hint: 'Ej: 500',
-                    icon: Icons.inventory_2_rounded,
-                    keyboardType: TextInputType.number,
-                    color: const Color(0xFF2196F3),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Campo: Margen de Ganancia
-                  _buildModernTextField(
-                    controller: margenController,
-                    label: 'Margen de Ganancia (%)',
-                    hint: 'Ej: 35',
-                    icon: Icons.trending_up_rounded,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    color: const Color(0xFF4CAF50),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Campo: Precio de Venta (calculado automáticamente)
-                  _buildCalculatedPriceField(precioVentaController),
-                  const SizedBox(height: 32),
-                  
-                  // Botones de acción
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildCancelButton(context),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: _buildAddButton(
-                          context,
-                          codigoController,
-                          nombreController,
-                          costoTotalController,
-                          precioVentaController,
-                          cantidadController,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Row(
+      children: [
+        Container(
+          height: 1,
+          width: 20,
+          color: Colors.grey.withOpacity(0.3),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              color: Colors.grey[600],
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: Colors.grey.withOpacity(0.3),
+          ),
+        ),
+      ],
     );
   }
 
@@ -784,70 +836,109 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
     required IconData icon,
     required Color color,
     TextInputType? keyboardType,
+    bool isPrimary = false,
+    bool isCompact = false,
+    bool hasSlider = false,
+    bool readOnly = false,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: readOnly ? Colors.grey.withOpacity(0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(isCompact ? 16 : 20),
         border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 2,
+          color: isPrimary ? color : color.withOpacity(0.3),
+          width: isPrimary ? 2 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: color.withOpacity(isPrimary ? 0.15 : 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 0,
           ),
         ],
       ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          labelStyle: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-          hintStyle: TextStyle(
-            color: Colors.black.withOpacity(0.3),
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  color.withOpacity(0.2),
-                  color.withOpacity(0.1),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: controller,
+            readOnly: readOnly,
+            keyboardType: keyboardType,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: readOnly ? Colors.grey[700] : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              labelText: label,
+              hintText: hint,
+              labelStyle: TextStyle(
+                color: readOnly ? Colors.grey : color,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
+              hintStyle: TextStyle(
+                color: Colors.black.withOpacity(0.3),
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+              prefixIcon: Container(
+                margin: EdgeInsets.all(isCompact ? 8 : 12),
+                padding: EdgeInsets.all(isCompact ? 6 : 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: readOnly
+                        ? [Colors.grey.withOpacity(0.2), Colors.grey.withOpacity(0.1)]
+                        : [color.withOpacity(0.2), color.withOpacity(0.1)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: readOnly ? Colors.grey : color,
+                  size: isCompact ? 18 : 22,
+                ),
+              ),
+              suffixIcon: readOnly
+                  ? Icon(Icons.lock_outline_rounded, color: Colors.grey[400], size: 20)
+                  : null,
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: isCompact ? 16 : 20,
+                vertical: isCompact ? 14 : 18,
+              ),
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
             ),
           ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
-        ),
+          if (hasSlider && !readOnly)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+              child: SizedBox(
+                height: 20,
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: color.withOpacity(0.5),
+                    inactiveTrackColor: color.withOpacity(0.1),
+                    thumbColor: color,
+                    overlayColor: color.withOpacity(0.1),
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    trackHeight: 2,
+                  ),
+                  child: Slider(
+                    value: double.tryParse(controller.text) ?? 35.0,
+                    min: 0,
+                    max: 100,
+                    onChanged: (value) {
+                      controller.text = value.toStringAsFixed(0);
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -857,98 +948,124 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFFFF3E0),
-            const Color(0xFFFFE0B2),
+            const Color(0xFFFFF8E1),
+            const Color(0xFFFFECB3).withOpacity(0.5),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFFF6F00).withOpacity(0.4),
+          color: const Color(0xFFFFB300),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6F00).withOpacity(0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: const Color(0xFFFFB300).withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: TextField(
-        controller: controller,
-        readOnly: true,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFFFF6F00),
-        ),
-        decoration: InputDecoration(
-          labelText: 'Precio de Venta Unitario (Calculado)',
-          hintText: '0.00',
-          labelStyle: const TextStyle(
-            color: Color(0xFFFF6F00),
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(
+              Icons.stars_rounded,
+              size: 80,
+              color: const Color(0xFFFFB300).withOpacity(0.1),
+            ),
           ),
-          hintStyle: TextStyle(
-            color: const Color(0xFFFF6F00).withOpacity(0.3),
-            fontWeight: FontWeight.w600,
-          ),
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFFF6F00),
-                  const Color(0xFFFF8F00),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          TextField(
+            controller: controller,
+            readOnly: true,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFFFF8F00),
+              letterSpacing: -0.5,
+            ),
+            decoration: InputDecoration(
+              labelText: 'PRECIO DE VENTA (Bs)',
+              hintText: '0.00',
+              labelStyle: const TextStyle(
+                color: Color(0xFFFF8F00),
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+                letterSpacing: 1,
               ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF6F00).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+              hintStyle: TextStyle(
+                color: const Color(0xFFFF8F00).withOpacity(0.3),
+                fontWeight: FontWeight.w600,
+              ),
+              prefixIcon: Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFFFB300),
+                      const Color(0xFFFF8F00),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8F00).withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.calculate_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          suffixIcon: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF6F00).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Text(
-                'AUTO',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFFF6F00),
-                  letterSpacing: 1,
+                child: const Icon(
+                  Icons.attach_money_rounded,
+                  color: Colors.white,
+                  size: 28,
                 ),
               ),
+              suffixIcon: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8F00).withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFF8F00)),
+                    SizedBox(width: 4),
+                    Text(
+                      'AI',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFFF8F00),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
+              floatingLabelBehavior: FloatingLabelBehavior.always,
             ),
           ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
-        ),
+        ],
       ),
     );
   }
@@ -956,17 +1073,27 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
   Widget _buildCancelButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.grey.withOpacity(0.2),
           width: 2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () => Navigator.pop(context),
+          highlightColor: Colors.grey.withOpacity(0.1),
+          splashColor: Colors.grey.withOpacity(0.1),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
@@ -974,7 +1101,7 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
               children: [
                 Icon(
                   Icons.close_rounded,
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.grey[600],
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -983,7 +1110,7 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
@@ -993,7 +1120,6 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
       ),
     );
   }
-
 
   Widget _buildAddButton(
     BuildContext context,
@@ -1016,7 +1142,7 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF9C27B0).withOpacity(0.4),
+            color: const Color(0xFFE91E63).withOpacity(0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -1048,21 +1174,30 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
 
             Navigator.pop(context);
           },
+          highlightColor: Colors.white.withOpacity(0.1),
+          splashColor: Colors.white.withOpacity(0.2),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: Colors.white,
-                  size: 24,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
-                SizedBox(width: 10),
-                Text(
-                  'Agregar',
+                const SizedBox(width: 12),
+                const Text(
+                  'Guardar Producto',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                     letterSpacing: 0.5,
