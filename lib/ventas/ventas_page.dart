@@ -16,7 +16,7 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
   bool _isLoading = false;
   
   // URL API 
-  final String apiUrl = 'http://192.168.0.224/puerto_evo';
+  final String apiUrl = 'http://192.168.0.29/puerto_evo';
   int _tiendaActual = 1; // Default: Puerto Centro
 
   double get _totalVenta => _cart.fold(0, (sum, item) => sum + item.subtotal);

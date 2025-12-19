@@ -3,9 +3,79 @@ import 'almacen/almacen_page.dart';
 import 'ventas/ventas_page.dart';
 import 'reporte/reporte_page.dart';
 import 'tiendas/tiendas_page.dart';
+import 'splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class _CompactMenuButton extends StatelessWidget {
+  const _CompactMenuButton({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.95),
+              color.withOpacity(0.75),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.95),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _MainMenuCard extends StatefulWidget {
@@ -45,9 +115,9 @@ class _MainMenuCardState extends State<_MainMenuCard> with SingleTickerProviderS
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
         transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
             colors: [
               widget.color.withOpacity(0.95),
@@ -67,26 +137,26 @@ class _MainMenuCardState extends State<_MainMenuCard> with SingleTickerProviderS
         child: Row(
           children: [
             Container(
-              height: 56,
-              width: 56,
+              height: 44,
+              width: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withOpacity(0.95),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Icon(
                 widget.icon,
                 color: widget.color,
-                size: 28,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 18),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,29 +164,31 @@ class _MainMenuCardState extends State<_MainMenuCard> with SingleTickerProviderS
                 children: [
                   Text(
                     widget.title,
-                    style: textTheme.titleLarge?.copyWith(
+                    style: textTheme.titleMedium?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.3,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 3),
                   Text(
                     widget.subtitle,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.95),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w400,
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.7),
-              size: 20,
+              Icons.chevron_right_rounded,
+              color: Colors.white.withOpacity(0.8),
+              size: 24,
             ),
           ],
         ),
@@ -144,7 +216,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF3F4F6),
         fontFamily: 'Roboto',
       ),
-      home: const MyHomePage(title: 'Puerto Evo – Ventas'),
+      home: const SplashScreen(),
     );
   }
 }
@@ -471,9 +543,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -495,7 +567,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -503,36 +575,38 @@ class _MyHomePageState extends State<MyHomePage> {
                           colorScheme.primary.withOpacity(0.1),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       Icons.waving_hand_rounded,
                       color: colorScheme.primary,
-                      size: 28,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           '¡Bienvenido!',
-                          style: textTheme.headlineSmall?.copyWith(
+                          style: textTheme.titleLarge?.copyWith(
                             color: Colors.black87,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                            fontSize: 20,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          'Panel principal de gestión',
-                          style: textTheme.bodyMedium?.copyWith(
+                          'Panel principal',
+                          style: textTheme.bodySmall?.copyWith(
                             color: Colors.black54,
                             fontWeight: FontWeight.w500,
+                            fontSize: 13,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -544,24 +618,24 @@ class _MyHomePageState extends State<MyHomePage> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF16A34A), // Verde
+                              backgroundColor: const Color(0xFF16A34A),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
+                                horizontal: 16,
+                                vertical: 10,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               elevation: 0,
                             ),
-                            icon: const Icon(Icons.add_shopping_cart_rounded),
+                            icon: const Icon(Icons.add_shopping_cart, size: 18),
                             label: const Text(
                               'NUEVA VENTA',
                               style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ),
@@ -574,14 +648,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         
-        // Sección de ventas por tienda
         Row(
           children: [
             Container(
-              height: 40,
-              width: 40,
+              height: 36,
+              width: 36,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 gradient: LinearGradient(
@@ -601,25 +674,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               child: const Icon(
-                Icons.store_rounded,
-                size: 22,
+                Icons.store,
+                size: 20,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 10),
             Text(
               'Ventas de hoy',
-              style: textTheme.titleLarge?.copyWith(
+              style: textTheme.titleMedium?.copyWith(
                 color: Colors.black87,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+                fontSize: 17,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         
-        // Tarjetas de tiendas
         Row(
           children: [
             Expanded(
@@ -642,55 +715,159 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         
-        const SizedBox(height: 28),
-        _MainMenuCard(
-          icon: Icons.storefront_rounded,
-          title: 'Ventas por tienda',
-          subtitle: 'Resumen diario y top productos',
-          color: colorScheme.primary,
-          onTap: () {
-            setState(() {
-              _currentTabIndex = 2;
-            });
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth > 600;
+            
+            if (isDesktop) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: _CompactMenuButton(
+                        icon: Icons.store,
+                        title: 'Ventas',
+                        color: colorScheme.primary,
+                        onTap: () {
+                          setState(() {
+                            _currentTabIndex = 2;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: _CompactMenuButton(
+                        icon: Icons.inventory_2,
+                        title: 'Almacén',
+                        color: Colors.orangeAccent,
+                        onTap: () {
+                          setState(() {
+                            _currentTabIndex = 1;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: _CompactMenuButton(
+                        icon: Icons.bar_chart,
+                        title: 'Reportes',
+                        color: Colors.purpleAccent,
+                        onTap: () {
+                          setState(() {
+                            _currentTabIndex = 2;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AspectRatio(
+                      aspectRatio: 1.0,
+                      child: _CompactMenuButton(
+                        icon: Icons.list_alt,
+                        title: 'Inventario',
+                        color: Colors.teal,
+                        onTap: () {
+                          setState(() {
+                            _currentTabIndex = 1;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: _CompactMenuButton(
+                            icon: Icons.store,
+                            title: 'Ventas',
+                            color: colorScheme.primary,
+                            onTap: () {
+                              setState(() {
+                                _currentTabIndex = 2;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: _CompactMenuButton(
+                            icon: Icons.inventory_2,
+                            title: 'Almacén',
+                            color: Colors.orangeAccent,
+                            onTap: () {
+                              setState(() {
+                                _currentTabIndex = 1;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: _CompactMenuButton(
+                            icon: Icons.bar_chart,
+                            title: 'Reportes',
+                            color: Colors.purpleAccent,
+                            onTap: () {
+                              setState(() {
+                                _currentTabIndex = 2;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: _CompactMenuButton(
+                            icon: Icons.list_alt,
+                            title: 'Inventario',
+                            color: Colors.teal,
+                            onTap: () {
+                              setState(() {
+                                _currentTabIndex = 1;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }
           },
         ),
-        const SizedBox(height: 18),
-        _MainMenuCard(
-          icon: Icons.inventory_2_rounded,
-          title: 'Almacén',
-          subtitle: 'Stock, criticidad y alertas',
-          color: Colors.orangeAccent,
-          onTap: () {
-            setState(() {
-              _currentTabIndex = 1;
-            });
-          },
-        ),
-        const SizedBox(height: 18),
-        _MainMenuCard(
-          icon: Icons.bar_chart_rounded,
-          title: 'Reportes',
-          subtitle: 'Indicadores y comportamiento',
-          color: Colors.purpleAccent,
-          onTap: () {
-            setState(() {
-              _currentTabIndex = 2;
-            });
-          },
-        ),
-        const SizedBox(height: 18),
-        _MainMenuCard(
-          icon: Icons.fact_check_rounded,
-          title: 'Inventario',
-          subtitle: 'Control de existencias',
-          color: Colors.teal,
-          onTap: () {
-            setState(() {
-              _currentTabIndex = 1;
-            });
-          },
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
       ],
     );
   }
