@@ -3,6 +3,7 @@ import 'almacen/almacen_page.dart';
 import 'ventas/ventas_page.dart';
 import 'reporte/reporte_page.dart';
 import 'tiendas/tiendas_page.dart';
+import 'usuarios/usuarios.dart';
 import 'splash_screen.dart';
 
 void main() {
@@ -718,153 +719,86 @@ class _MyHomePageState extends State<MyHomePage> {
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth > 600;
-            
-            if (isDesktop) {
-              return Row(
-                children: [
-                  Expanded(
+            final width = constraints.maxWidth;
+
+            final int columns = width >= 1000
+                ? 5
+                : width >= 700
+                    ? 4
+                    : 2;
+
+            const spacing = 12.0;
+            final itemWidth = (width - (spacing * (columns - 1))) / columns;
+
+            final items = <Widget>[
+              _CompactMenuButton(
+                icon: Icons.store,
+                title: 'Ventas',
+                color: colorScheme.primary,
+                onTap: () {
+                  setState(() {
+                    _currentTabIndex = 2;
+                  });
+                },
+              ),
+              _CompactMenuButton(
+                icon: Icons.inventory_2,
+                title: 'Almacén',
+                color: Colors.orangeAccent,
+                onTap: () {
+                  setState(() {
+                    _currentTabIndex = 1;
+                  });
+                },
+              ),
+              _CompactMenuButton(
+                icon: Icons.bar_chart,
+                title: 'Reportes',
+                color: Colors.purpleAccent,
+                onTap: () {
+                  setState(() {
+                    _currentTabIndex = 2;
+                  });
+                },
+              ),
+              _CompactMenuButton(
+                icon: Icons.list_alt,
+                title: 'Inventario',
+                color: Colors.teal,
+                onTap: () {
+                  setState(() {
+                    _currentTabIndex = 1;
+                  });
+                },
+              ),
+              _CompactMenuButton(
+                icon: Icons.people_alt_rounded,
+                title: 'Usuarios',
+                color: Colors.indigo,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const UsuariosPage(),
+                    ),
+                  );
+                },
+              ),
+            ];
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: itemWidth,
                     child: AspectRatio(
                       aspectRatio: 1.0,
-                      child: _CompactMenuButton(
-                        icon: Icons.store,
-                        title: 'Ventas',
-                        color: colorScheme.primary,
-                        onTap: () {
-                          setState(() {
-                            _currentTabIndex = 2;
-                          });
-                        },
-                      ),
+                      child: item,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: _CompactMenuButton(
-                        icon: Icons.inventory_2,
-                        title: 'Almacén',
-                        color: Colors.orangeAccent,
-                        onTap: () {
-                          setState(() {
-                            _currentTabIndex = 1;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: _CompactMenuButton(
-                        icon: Icons.bar_chart,
-                        title: 'Reportes',
-                        color: Colors.purpleAccent,
-                        onTap: () {
-                          setState(() {
-                            _currentTabIndex = 2;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AspectRatio(
-                      aspectRatio: 1.0,
-                      child: _CompactMenuButton(
-                        icon: Icons.list_alt,
-                        title: 'Inventario',
-                        color: Colors.teal,
-                        onTap: () {
-                          setState(() {
-                            _currentTabIndex = 1;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: _CompactMenuButton(
-                            icon: Icons.store,
-                            title: 'Ventas',
-                            color: colorScheme.primary,
-                            onTap: () {
-                              setState(() {
-                                _currentTabIndex = 2;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: _CompactMenuButton(
-                            icon: Icons.inventory_2,
-                            title: 'Almacén',
-                            color: Colors.orangeAccent,
-                            onTap: () {
-                              setState(() {
-                                _currentTabIndex = 1;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: _CompactMenuButton(
-                            icon: Icons.bar_chart,
-                            title: 'Reportes',
-                            color: Colors.purpleAccent,
-                            onTap: () {
-                              setState(() {
-                                _currentTabIndex = 2;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: _CompactMenuButton(
-                            icon: Icons.list_alt,
-                            title: 'Inventario',
-                            color: Colors.teal,
-                            onTap: () {
-                              setState(() {
-                                _currentTabIndex = 1;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            }
+              ],
+            );
           },
         ),
         const SizedBox(height: 16),

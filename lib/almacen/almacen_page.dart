@@ -36,7 +36,7 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
   bool _isLoading = true;
   
   // URL de tu API (cambia localhost por tu IP si pruebas en dispositivo físico)
-  final String apiUrl = 'http://192.168.0.29/puerto_evo';
+  final String apiUrl = 'http://192.168.0.224/puerto_evo';
   
   // Tienda actual (1 = Centro, 2 = Norte)
   int _tiendaActual = 1;
