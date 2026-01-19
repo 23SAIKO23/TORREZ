@@ -5,7 +5,14 @@ import 'dart:convert';
 import 'dart:ui';
 
 class VentasPage extends StatefulWidget {
-  const VentasPage({super.key});
+  final String nombreTienda;
+  final int tiendaId;
+  
+  const VentasPage({
+    super.key,
+    required this.nombreTienda,
+    required this.tiendaId,
+  });
 
   @override
   State<VentasPage> createState() => _VentasPageState();
@@ -17,7 +24,6 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
   
   // URL API 
   final String apiUrl = 'http://192.168.0.224/puerto_evo';
-  int _tiendaActual = 1; // Default: Puerto Centro
 
   double get _totalVenta => _cart.fold(0, (sum, item) => sum + item.subtotal);
 
@@ -40,50 +46,6 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  void _cambiarTienda(int nuevaTienda) {
-    if (_tiendaActual == nuevaTienda) return;
-    
-    if (_cart.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.white.withOpacity(0.9),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('¿Cambiar de Tienda?'),
-          content: const Text(
-            'Si cambias de tienda, se vaciará el carrito actual.',
-            style: TextStyle(color: Colors.black54),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _tiendaActual = nuevaTienda;
-                  _cart.clear();
-                });
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Confirmar'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      setState(() {
-        _tiendaActual = nuevaTienda;
-      });
-    }
-  }
 
   void _addToCart(Map<String, dynamic> product, int currentStock) {
     HapticFeedback.lightImpact();
@@ -134,7 +96,7 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
     
     try {
       final saleData = {
-        'tienda_id': _tiendaActual,
+        'tienda_id': widget.tiendaId,
         'total': _totalVenta,
         'productos': _cart.map((item) => {
           'id': item.id,
@@ -254,99 +216,169 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF0FDF4), Color(0xFFDCFCE7)],
-            stops: [0.3, 0.9],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFBE185D), Color(0xFFEC4899)],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // --- CUSTOM HEADER ---
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _GlassBox(
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    const Text(
-                      'Nueva Venta',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF14532D),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    _GlassBox(
-                      child: IconButton(
-                        icon: const Icon(Icons.more_horiz_rounded),
-                        onPressed: () {}, // Future options
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // --- STORE SELECTOR CAPSULE ---
+              // --- MODERN HEADER ---
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(5),
+                margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _StoreToggle(
-                        title: 'Puerto Centro',
-                        isActive: _tiendaActual == 1,
-                        onTap: () => _cambiarTienda(1),
-                      ),
-                    ),
-                    Expanded(
-                      child: _StoreToggle(
-                        title: 'Puerto Norte',
-                        isActive: _tiendaActual == 2,
-                        onTap: () => _cambiarTienda(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // --- TOTAL DISPLAY ---
-              ScaleTransition(
-                scale: _scaleAnimation,
                 child: Column(
                   children: [
-                    Text(
-                      'Total a Pagar',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600),
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          ),
+                          child: const Text(
+                            'VENTA ACTIVA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Bs ${_totalVenta.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF16A34A),
-                        height: 1.0,
-                        letterSpacing: -2,
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [const Color(0xFFE11D48), const Color(0xFFBE185D)],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFFE11D48).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                            ],
+                          ),
+                          child: const Icon(Icons.store_rounded, color: Colors.white, size: 32),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Trabajando en',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.nombreTienda,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+
+              const SizedBox(height: 24),
+
+              // --- MODERN TOTAL DISPLAY ---
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(Icons.paid_rounded, color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'TOTAL VENTA',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Bs',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _totalVenta.toStringAsFixed(2),
+                            style: const TextStyle(
+                              fontSize: 56,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              height: 1.0,
+                              letterSpacing: -2,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -355,15 +387,15 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
 
               const SizedBox(height: 24),
 
-              // --- LISTA DE PRODUCTOS ---
+              // --- MODERN PRODUCT LIST ---
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF831843),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
                     boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 30, offset: Offset(0, -10)),
+                      BoxShadow(color: const Color(0xFFBE185D).withOpacity(0.4), blurRadius: 30, offset: const Offset(0, -10)),
                     ],
                   ),
                   child: ClipRRect(
@@ -399,17 +431,28 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
                                 );
                               },
                             ),
-                            // Floating Button
+                            // Modern Floating Action Button
                             Positioned(
                               bottom: 24,
                               right: 24,
-                              child: FloatingActionButton.extended(
-                                onPressed: () => _showManualSelectionDialog(context),
-                                label: const Text('AGREGAR'),
-                                icon: const Icon(Icons.add),
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                elevation: 5,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFE11D48), Color(0xFFBE185D)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(color: const Color(0xFFE11D48).withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 10)),
+                                  ],
+                                ),
+                                child: FloatingActionButton.extended(
+                                  onPressed: () => _showManualSelectionDialog(context),
+                                  label: const Text('AGREGAR', style: TextStyle(fontWeight: FontWeight.w700)),
+                                  icon: const Icon(Icons.add_rounded, size: 24),
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                ),
                               ),
                             ),
                           ],
@@ -421,36 +464,84 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
           ),
         ),
       ),
-      // --- BOTTOM SHEET FOR CHECKOUT ---
+      // --- MODERN BOTTOM SHEET FOR CHECKOUT ---
       bottomSheet: _cart.isEmpty
           ? null
           : Container(
-              color: Colors.white,
+              decoration: BoxDecoration(
+                color: const Color(0xFF831843),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFFBE185D).withOpacity(0.4), blurRadius: 30, offset: const Offset(0, -10)),
+                ],
+              ),
               padding: const EdgeInsets.all(24),
               child: SafeArea(
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _processSale,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      foregroundColor: Colors.white,
-                      elevation: 10,
-                      shadowColor: const Color(0xFF16A34A).withOpacity(0.4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('CONFIRMAR VENTA', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                              SizedBox(width: 10),
-                              Icon(Icons.arrow_forward_rounded)
+                              Text(
+                                'TOTAL A PAGAR',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Bs ${_totalVenta.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ],
                           ),
-                  ),
+                        ),
+                        Container(
+                          width: 200,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE11D48), Color(0xFFBE185D)],
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFFE11D48).withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 10)),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _processSale,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('FINALIZAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.check_rounded, size: 20)
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -465,7 +556,7 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
       pageBuilder: (context, a1, a2) {
         return _ProductSelectionDialog(
           apiUrl: apiUrl,
-          tiendaId: _tiendaActual,
+          tiendaId: widget.tiendaId,
           onProductSelected: (p, s) => _addToCart(p, s),
         );
       },
@@ -482,57 +573,7 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
 
 // ---------------- CUSTOM COMPONENTS ----------------
 
-class _GlassBox extends StatelessWidget {
-  final Widget child;
-  const _GlassBox({required this.child});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
-      ),
-      child: child,
-    );
-  }
-}
 
-class _StoreToggle extends StatelessWidget {
-  final String title;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _StoreToggle({required this.title, required this.isActive, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF16A34A) : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: isActive 
-             ? [BoxShadow(color: const Color(0xFF16A34A).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))] 
-             : [],
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey[600],
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _CartItemRow extends StatelessWidget {
   final _CartItem item;
@@ -673,33 +714,73 @@ class _EmptyCartState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.network(
-            'https://cdn-icons-png.flaticon.com/512/11329/11329060.png',
-            height: 120,
+          Container(
             width: 120,
-            errorBuilder: (context, error, stackTrace) => 
-               Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey[300]),
-          ),
-          const SizedBox(height: 24),
-          const Text('Carrito Vacío', 
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-          const SizedBox(height: 8),
-          Text('Explora el inventario y realiza tu venta', 
-            style: TextStyle(color: Colors.grey[400], fontSize: 16)),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: onAdd,
-            icon: const Icon(Icons.search),
-            label: const Text('BUSCAR PRODUCTOS'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF16A34A),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              elevation: 8,
-              shadowColor: const Color(0xFF16A34A).withOpacity(0.4),
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)],
+              ),
+              borderRadius: BorderRadius.circular(60),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
-          )
+            child: const Icon(
+              Icons.shopping_bag_outlined,
+              color: Colors.white,
+              size: 60,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: const Text(
+              'CARRITO VACÍO',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Agrega productos para comenzar',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE11D48), Color(0xFFBE185D)],
+              ),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFFE11D48).withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 10)),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add_circle_rounded, size: 24),
+              label: const Text('AGREGAR PRODUCTOS'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                elevation: 0,
+              ),
+            ),
+          ),
         ],
       ),
     );

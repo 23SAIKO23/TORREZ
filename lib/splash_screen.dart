@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'main.dart';
+import 'services/user_session.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   final List<String> apiUrls = const [
     'http://127.0.0.1/puerto_evo',
     'http://localhost/puerto_evo',
-    'http://192.168.0.224/puerto_evo',
+    'http://192.168.0.14/puerto_evo',
   ];
 
   @override
@@ -114,6 +115,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         }
         final decoded = json.decode(body);
         if (decoded is Map && decoded['status'] != null) {
+          // Store user data in session if available
+          if (decoded['tienda'] != null) {
+            UserSession.instance.setUserData(
+              tienda: decoded['tienda'].toString(),
+              nombre: (decoded['nombre'] ?? '').toString(),
+              rol: (decoded['rol'] ?? 'USUARIO').toString(),
+              userId: int.tryParse((decoded['user_id'] ?? '0').toString()) ?? 0,
+            );
+          }
           return decoded['status'].toString().toUpperCase();
         }
       } catch (e) {
@@ -370,6 +380,15 @@ class _DevicePendingPageState extends State<_DevicePendingPage> {
           if (!mounted) return;
 
           if (status == 'APROBADO') {
+            // Store user data in session
+            if (decoded is Map && decoded['tienda'] != null) {
+              UserSession.instance.setUserData(
+                tienda: decoded['tienda'].toString(),
+                nombre: (decoded['nombre'] ?? '').toString(),
+                rol: (decoded['rol'] ?? 'USUARIO').toString(),
+                userId: int.tryParse((decoded['user_id'] ?? '0').toString()) ?? 0,
+              );
+            }
             _timer?.cancel();
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(

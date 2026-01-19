@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
+import '../services/user_session.dart';
 
 enum InventoryStatus { ok, low, critical }
 
@@ -36,10 +38,19 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
   bool _isLoading = true;
   
   // URL de tu API (cambia localhost por tu IP si pruebas en dispositivo físico)
-  final String apiUrl = 'http://192.168.0.224/puerto_evo';
+  final String apiUrl = 'http://192.168.0.14/puerto_evo';
   
   // Tienda actual (1 = Centro, 2 = Norte)
   int _tiendaActual = 1;
+  
+  // Colores personalizados
+  final Color _primaryColor = const Color(0xFF6C63FF);
+  final Color _secondaryColor = const Color(0xFF4A45B1);
+  final Color _successColor = const Color(0xFF10B981);
+  final Color _warningColor = const Color(0xFFF59E0B);
+  final Color _dangerColor = const Color(0xFFEF4444);
+  final Color _backgroundColor = const Color(0xFFF8FAFC);
+  final Color _cardColor = Colors.white;
 
   @override
   void initState() {
@@ -48,8 +59,24 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+    // Set initial store based on user's assigned store
+    _initializeTienda();
     _cargarProductos();
   }
+
+  void _initializeTienda() {
+    final session = UserSession.instance;
+    if (session.isSingleStore) {
+      // User only has access to one store
+      _tiendaActual = session.tiendaId ?? 1;
+    } else {
+      // User has access to all stores, default to store 1
+      _tiendaActual = 1;
+    }
+  }
+
+  /// Check if user can switch between stores
+  bool get _canSwitchStores => UserSession.instance.isAllStores;
 
   @override
   void dispose() {
@@ -265,15 +292,20 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Selector de tienda
-        _buildTiendaSelector(),
-        const SizedBox(height: 16),
+        // Selector de tienda (only show if user can access all stores)
+        if (_canSwitchStores) ...[
+          _buildTiendaSelector(),
+          const SizedBox(height: 16),
+        ] else ...[
+        
+          // Show single store indicator
+          _buildSingleStoreIndicator(),
+          const SizedBox(height: 16),
+        ],
         
         // Estadísticas del almacén
         _buildStatisticsSection(),
         const SizedBox(height: 20),
-        
-        
         // Botones de acción
         Row(
           children: [
@@ -343,6 +375,67 @@ class _AlmacenPageState extends State<AlmacenPage> with SingleTickerProviderStat
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSingleStoreIndicator() {
+    final storeName = _tiendaActual == 1 ? 'Puerto Centro' : 'Puerto Norte';
+    final storeIcon = _tiendaActual == 1 ? Icons.store_rounded : Icons.store_mall_directory_rounded;
+    final storeColor = _tiendaActual == 1 ? const Color(0xFFF50057) : const Color(0xFF9C27B0);
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            storeColor.withOpacity(0.15),
+            storeColor.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: storeColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: storeColor.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(storeIcon, color: storeColor, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  storeName,
+                  style: TextStyle(
+                    color: storeColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Tu tienda asignada',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.lock_rounded, color: Colors.grey[400], size: 20),
+        ],
+      ),
     );
   }
 

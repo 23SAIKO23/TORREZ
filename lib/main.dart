@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'almacen/almacen_page.dart';
 import 'ventas/ventas_page.dart';
-import 'reporte/reporte_page.dart';
-import 'tiendas/tiendas_page.dart';
 import 'usuarios/usuarios.dart';
 import 'splash_screen.dart';
 
@@ -244,11 +242,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedStoreIndex = 0;
   int _currentTabIndex = 0;
 
-  final List<String> _stores = [
-    'Tienda Puerto Centro',
-    'Tienda Puerto Norte',
-    'Todas las tiendas',
-  ];
 
   String _getCurrentDate() {
     final now = DateTime.now();
@@ -413,18 +406,6 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (_currentTabIndex != 0) ...[
-                  _StoreSelector(
-                    stores: _stores,
-                    selectedIndex: _selectedStoreIndex,
-                    onChanged: (index) {
-                      setState(() {
-                        _selectedStoreIndex = index;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -614,7 +595,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPressed: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => const VentasPage(),
+                                  builder: (context) => VentasPage(
+                                    nombreTienda: _selectedStoreIndex == 0 ? 'Puerto Centro' : 'Puerto Norte',
+                                    tiendaId: _selectedStoreIndex == 0 ? 1 : 2,
+                                  ),
                                 ),
                               );
                             },
@@ -834,71 +818,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class _StoreSelector extends StatelessWidget {
-  const _StoreSelector({
-    required this.stores,
-    required this.selectedIndex,
-    required this.onChanged,
-  });
-
-  final List<String> stores;
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          for (int i = 0; i < stores.length; i++) ...[
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onChanged(i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: i == selectedIndex
-                        ? colorScheme.primary.withOpacity(0.08)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Center(
-                    child: Text(
-                      stores[i],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight:
-                            i == selectedIndex ? FontWeight.w600 : FontWeight.w400,
-                        color: i == selectedIndex
-                            ? colorScheme.primary
-                            : Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            if (i != stores.length - 1) const SizedBox(width: 6),
-          ],
-        ],
-      ),
-    );
-  }
-}
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({

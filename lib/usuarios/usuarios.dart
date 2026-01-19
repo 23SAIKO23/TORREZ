@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'crear.dart';
+import 'editar.dart';
 
 class UsuariosPage extends StatefulWidget {
   const UsuariosPage({super.key});
@@ -17,7 +18,7 @@ class UsuariosPage extends StatefulWidget {
 class _UsuariosPageState extends State<UsuariosPage> {
   final TextEditingController _searchController = TextEditingController();
 
-  static const String _apiUrl = 'http://192.168.0.224/puerto_evo';
+  static const String _apiUrl = 'http://192.168.0.14/puerto_evo';
 
   Future<List<_Usuario>>? _futureUsuarios;
 
@@ -737,7 +738,26 @@ class _UserCard extends StatelessWidget {
             SizedBox(width: isMobile ? 8 : 10),
             _GlassIconButton(
               icon: Icons.edit_rounded,
-              onPressed: () {},
+              onPressed: () async {
+                final updated = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EditarUsuarioPage(
+                      usuarioId: usuario.id,
+                      nombreInicial: usuario.nombre,
+                      usuarioInicial: usuario.usuario,
+                      rolInicial: usuario.rol,
+                      tiendaInicial: usuario.tienda,
+                      estadoInicial: usuario.estado == _UserStatus.activo ? 'ACTIVO' : 'INACTIVO',
+                    ),
+                  ),
+                );
+
+                if (updated == true) {
+                  // Refresh the list
+                  final state = context.findAncestorStateOfType<_UsuariosPageState>();
+                  state?.setState(() => state._futureUsuarios = state._fetchUsuarios());
+                }
+              },
             ),
             if (!isMobile) SizedBox(width: 10),
             if (!isMobile)
@@ -783,25 +803,33 @@ enum _UserStatus { activo, inactivo }
 
 class _Usuario {
   const _Usuario({
+    required this.id,
     required this.nombre,
+    required this.usuario,
     required this.rol,
     required this.tienda,
     required this.estado,
   });
 
+  final int id;
   final String nombre;
+  final String usuario;
   final String rol;
   final String tienda;
   final _UserStatus estado;
 
   factory _Usuario.fromApi(Map raw) {
+    final id = int.tryParse((raw['id'] ?? '0').toString()) ?? 0;
     final nombre = (raw['nombre'] ?? '').toString();
+    final usuario = (raw['usuario'] ?? '').toString();
     final rol = (raw['rol'] ?? '').toString();
     final tienda = (raw['tienda'] ?? '').toString();
     final estadoStr = (raw['estado'] ?? '').toString().toUpperCase();
     final estado = estadoStr == 'ACTIVO' ? _UserStatus.activo : _UserStatus.inactivo;
     return _Usuario(
+      id: id,
       nombre: nombre.isEmpty ? 'Sin nombre' : nombre,
+      usuario: usuario.isEmpty ? 'user' : usuario,
       rol: rol.isEmpty ? 'USUARIO' : rol,
       tienda: tienda.isEmpty ? '-' : tienda,
       estado: estado,

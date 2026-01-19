@@ -5,28 +5,67 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class CrearUsuarioPage extends StatefulWidget {
-  const CrearUsuarioPage({super.key});
+class EditarUsuarioPage extends StatefulWidget {
+  const EditarUsuarioPage({
+    super.key,
+    required this.usuarioId,
+    required this.nombreInicial,
+    required this.usuarioInicial,
+    required this.rolInicial,
+    required this.tiendaInicial,
+    required this.estadoInicial,
+  });
+
+  final int usuarioId;
+  final String nombreInicial;
+  final String usuarioInicial;
+  final String rolInicial;
+  final String tiendaInicial;
+  final String estadoInicial;
 
   @override
-  State<CrearUsuarioPage> createState() => _CrearUsuarioPageState();
+  State<EditarUsuarioPage> createState() => _EditarUsuarioPageState();
 }
 
-class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
+class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _usuarioController = TextEditingController();
+  late final TextEditingController _nombreController;
+  late final TextEditingController _usuarioController;
   final TextEditingController _claveController = TextEditingController();
 
   bool _mostrarClave = false;
   bool _isLoading = false;
 
-  String _rol = 'USUARIO';
-  String _tienda = 'primera';
-  bool _activo = true;
+  late String _rol;
+  late String _tienda;
+  late bool _activo;
 
   final String apiUrl = 'http://192.168.0.14/puerto_evo';
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.nombreInicial);
+    _usuarioController = TextEditingController(text: widget.usuarioInicial);
+    _rol = widget.rolInicial;
+    _tienda = _convertirTienda(widget.tiendaInicial);
+    _activo = widget.estadoInicial.toUpperCase() == 'ACTIVO';
+  }
+
+  String _convertirTienda(String tiendaVieja) {
+    // Convertir valores antiguos (1, 2) a los nuevos
+    if (tiendaVieja == '1') return 'primera';
+    if (tiendaVieja == '2') return 'segunda';
+    
+    // Si ya es uno de los nuevos valores, devolverlo
+    if (['primera', 'segunda', 'todas las tiendas'].contains(tiendaVieja)) {
+      return tiendaVieja;
+    }
+    
+    // Valor por defecto si no reconocemos el valor
+    return 'primera';
+  }
 
   String _normalizeUsuario(String input) {
     var v = input.trim();
@@ -43,7 +82,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
     super.dispose();
   }
 
-  Future<void> _crearUsuario() async {
+  Future<void> _actualizarUsuario() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
@@ -51,16 +90,21 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
 
     try {
       final payload = {
+        'id': widget.usuarioId,
         'nombre': _nombreController.text.trim(),
         'usuario': _normalizeUsuario(_usuarioController.text),
-        'clave': _claveController.text,
         'rol': _rol,
         'tienda': _tienda,
         'estado': _activo ? 'ACTIVO' : 'INACTIVO',
       };
 
+      // Solo incluir clave si se proporcionó una nueva
+      if (_claveController.text.isNotEmpty) {
+        payload['clave'] = _claveController.text;
+      }
+
       final response = await http.post(
-        Uri.parse('$apiUrl/crear_usuario.php'),
+        Uri.parse('$apiUrl/editarusuarios.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
@@ -108,7 +152,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                         const SizedBox(width: 12),
                         const Expanded(
                           child: Text(
-                            'Usuario creado correctamente',
+                            'Usuario actualizado correctamente',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
@@ -129,8 +173,8 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
           Navigator.of(context).pop(true);
         } else {
           final msg = decoded is Map
-              ? (decoded['message'] ?? decoded['error'] ?? 'No se pudo crear el usuario')
-              : 'No se pudo crear el usuario';
+              ? (decoded['message'] ?? decoded['error'] ?? 'No se pudo actualizar el usuario')
+              : 'No se pudo actualizar el usuario';
           _showSnack(msg.toString(), const Color(0xFFEF4444));
         }
       } else {
@@ -168,7 +212,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Crear usuario'),
+        title: const Text('Editar usuario'),
         centerTitle: true,
       ),
       body: Container(
@@ -235,7 +279,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                                     ),
                                   ),
                                   child: Icon(
-                                    Icons.person_add_alt_1_rounded,
+                                    Icons.edit_rounded,
                                     color: Colors.white,
                                     size: MediaQuery.of(context).size.width < 600 ? 22 : 24,
                                   ),
@@ -243,7 +287,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                                 SizedBox(width: MediaQuery.of(context).size.width < 600 ? 8 : 12),
                                 Expanded(
                                   child: Text(
-                                    'Nuevo usuario',
+                                    'Editar usuario',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w900,
@@ -274,28 +318,13 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                               controller: _usuarioController,
                               label: 'Usuario',
                               icon: Icons.alternate_email_rounded,
-                              onChanged: (v) {
-                                final normalized = _normalizeUsuario(v);
-                                if (normalized != v) {
-                                  _usuarioController.value = TextEditingValue(
-                                    text: normalized,
-                                    selection: TextSelection.collapsed(offset: normalized.length),
-                                  );
-                                }
-                              },
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Ingresa un nombre de usuario (ej: jperez)';
-                                final normalized = _normalizeUsuario(v);
-                                if (normalized.length < 3) return 'El usuario debe tener al menos 3 caracteres';
-                                final ok = RegExp(r'^[a-zA-Z0-9._-]+$').hasMatch(normalized);
-                                if (!ok) return 'Solo se permiten letras, números, punto, guión y guión bajo';
-                                return null;
-                              },
+                              enabled: false, // Usuario no editable
+                              validator: (v) => null,
                             ),
                             SizedBox(height: MediaQuery.of(context).size.width < 600 ? 10 : 12),
                             _GlassTextField(
                               controller: _claveController,
-                              label: 'Contraseña',
+                              label: 'Nueva contraseña (opcional)',
                               icon: Icons.lock_rounded,
                               obscureText: !_mostrarClave,
                               suffix: IconButton(
@@ -306,8 +335,9 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                                 ),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Ingresa una contraseña';
-                                if (v.length < 4) return 'Mínimo 4 caracteres';
+                                if (v != null && v.isNotEmpty && v.length < 4) {
+                                  return 'Mínimo 4 caracteres';
+                                }
                                 return null;
                               },
                             ),
@@ -413,12 +443,12 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                               width: double.infinity,
                               height: MediaQuery.of(context).size.width < 600 ? 48 : 54,
                               child: ElevatedButton.icon(
-                                onPressed: _isLoading ? null : _crearUsuario,
+                                onPressed: _isLoading ? null : _actualizarUsuario,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF22C55E),
+                                  backgroundColor: const Color(0xFF3B82F6),
                                   foregroundColor: Colors.white,
                                   elevation: 10,
-                                  shadowColor: const Color(0xFF22C55E).withOpacity(0.4),
+                                  shadowColor: const Color(0xFF3B82F6).withOpacity(0.4),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                                 ),
                                 icon: _isLoading
@@ -432,7 +462,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                                         size: MediaQuery.of(context).size.width < 600 ? 20 : 24,
                                       ),
                                 label: Text(
-                                  _isLoading ? 'CREANDO...' : 'CREAR USUARIO',
+                                  _isLoading ? 'ACTUALIZANDO...' : 'GUARDAR CAMBIOS',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.6,
@@ -447,7 +477,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Endpoint: $apiUrl/crear_usuario.php',
+                      'Endpoint: $apiUrl/editar_usuario.php',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.55),
                         fontWeight: FontWeight.w600,
@@ -548,6 +578,7 @@ class _GlassTextField extends StatelessWidget {
     this.obscureText = false,
     this.onChanged,
     this.suffix,
+    this.enabled = true,
   });
 
   final TextEditingController controller;
@@ -557,6 +588,7 @@ class _GlassTextField extends StatelessWidget {
   final bool obscureText;
   final ValueChanged<String>? onChanged;
   final Widget? suffix;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -571,6 +603,7 @@ class _GlassTextField extends StatelessWidget {
           validator: validator,
           obscureText: obscureText,
           onChanged: onChanged,
+          enabled: enabled,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -584,7 +617,7 @@ class _GlassTextField extends StatelessWidget {
             prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.85)),
             suffixIcon: suffix,
             filled: true,
-            fillColor: Colors.white.withOpacity(0.10),
+            fillColor: Colors.white.withOpacity(enabled ? 0.10 : 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
               borderSide: BorderSide(color: Colors.white.withOpacity(0.16)),
@@ -592,6 +625,10 @@ class _GlassTextField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
               borderSide: BorderSide(color: Colors.white.withOpacity(0.16)),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
