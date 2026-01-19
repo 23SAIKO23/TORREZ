@@ -23,7 +23,8 @@ class _VentasPageState extends State<VentasPage> with SingleTickerProviderStateM
   bool _isLoading = false;
   
   // URL API 
-  final String apiUrl = 'http://192.168.0.224/puerto_evo';
+  final String apiUrl = 'http://192.168.0.29/puerto_evo/puerto_evo';
+  int _tiendaActual = 1; // Default: Puerto Centro
 
   double get _totalVenta => _cart.fold(0, (sum, item) => sum + item.subtotal);
 
@@ -818,7 +819,7 @@ class _ProductSelectionDialogState extends State<_ProductSelectionDialog> {
   Future<void> _fetchProducts() async {
     try {
       final response = await http.get(
-        Uri.parse('${widget.apiUrl}/get_almacen.php?tienda=${widget.tiendaId}'),
+        Uri.parse('${widget.apiUrl}/get_inventario.php?tienda=${widget.tiendaId}'),
       );
 
       if (response.statusCode == 200) {
@@ -923,51 +924,89 @@ class _ProductSelectionDialogState extends State<_ProductSelectionDialog> {
                           itemBuilder: (context, index) {
                             final product = _filteredProducts[index];
                             final stock = int.tryParse(product['stock'].toString()) ?? 0;
+                            final price = double.tryParse(product['precio'].toString()) ?? 0.0;
+                            final imageUrl = product['imagen_url'];
                             final hasStock = stock > 0;
                             
-                            return Opacity(
-                              opacity: hasStock ? 1.0 : 0.5,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: hasStock ? () {
-                                    widget.onProductSelected(product, stock);
-                                    Navigator.pop(context);
-                                  } : null,
-                                  borderRadius: BorderRadius.circular(20),
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: hasStock ? () {
+                                  widget.onProductSelected(product, stock);
+                                  Navigator.pop(context);
+                                } : null,
+                                borderRadius: BorderRadius.circular(20),
+                                child: Opacity(
+                                  opacity: hasStock ? 1.0 : 0.6,
                                   child: Container(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.grey.withOpacity(0.15)),
                                       borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ],
                                     ),
                                     child: Row(
                                       children: [
+                                        // Image Section
                                         Container(
-                                          width: 50, height: 50,
+                                          width: 60, height: 60,
                                           decoration: BoxDecoration(
-                                            color: hasStock ? const Color(0xFFDCFCE7) : Colors.grey[200],
+                                            color: Colors.grey[100],
                                             borderRadius: BorderRadius.circular(12),
                                           ),
-                                          child: Center(
-                                            child: Text('📦', style: TextStyle(fontSize: 24, color: hasStock ? null : Colors.grey)),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: imageUrl != null && imageUrl.isNotEmpty
+                                                ? Image.network(
+                                                    imageUrl,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (ctx, err, stack) => const Icon(Icons.image_not_supported_rounded, color: Colors.grey),
+                                                  )
+                                                : const Icon(Icons.image_not_supported_rounded, color: Colors.grey),
                                           ),
                                         ),
                                         const SizedBox(width: 16),
+                                        // Info Section
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(product['nombre_producto'], 
+                                              Text(product['nombre_producto'] ?? 'Sin nombre', 
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1F2937))),
                                               const SizedBox(height: 4),
-                                              Text('Stock: $stock', 
-                                                style: TextStyle(color: hasStock ? const Color(0xFF16A34A) : Colors.red, fontWeight: FontWeight.w600)),
+                                              Row(
+                                                children: [
+                                                  Text('Stock: $stock', 
+                                                    style: TextStyle(color: hasStock ? Colors.grey[600] : Colors.red, fontWeight: FontWeight.w600, fontSize: 13)),
+                                                  const SizedBox(width: 10),
+                                                  if (!hasStock)
+                                                    const Text('AGOTADO', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w900, fontSize: 10)),
+                                                ],
+                                              ),
                                             ],
                                           ),
                                         ),
-                                        Text('Bs ${product['precio']}', 
-                                           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF16A34A))),
+                                        // Price Section
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF16A34A).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Text(
+                                            'Bs ${price.toStringAsFixed(2)}', 
+                                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF16A34A)),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
