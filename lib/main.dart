@@ -460,23 +460,25 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: _buildCurrentTab(
-                      colorScheme: colorScheme,
-                      totalHoyGlobal: totalHoyGlobal,
-                      totalHoySeleccionado: totalHoySeleccionado,
-                      topProducts: topProducts,
-                      lowStockItems: lowStockItems,
-                    ),
+            child: _currentTabIndex == 3
+                ? const ArticulosPage() // ArticulosPage tiene su propio Scaffold con FAB
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: _buildCurrentTab(
+                            colorScheme: colorScheme,
+                            totalHoyGlobal: totalHoyGlobal,
+                            totalHoySeleccionado: totalHoySeleccionado,
+                            topProducts: topProducts,
+                            lowStockItems: lowStockItems,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

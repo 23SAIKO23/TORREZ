@@ -41,7 +41,7 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
   late String _tienda;
   late bool _activo;
 
-  final String apiUrl = 'http://192.168.0.14/puerto_evo';
+  final String apiUrl = 'http://192.168.0.29/puerto_evo';
 
   @override
   void initState() {

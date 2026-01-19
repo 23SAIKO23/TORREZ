@@ -18,7 +18,7 @@ class UsuariosPage extends StatefulWidget {
 class _UsuariosPageState extends State<UsuariosPage> {
   final TextEditingController _searchController = TextEditingController();
 
-  static const String _apiUrl = 'http://192.168.0.14/puerto_evo';
+  static const String _apiUrl = 'http://192.168.0.29/puerto_evo';
 
   Future<List<_Usuario>>? _futureUsuarios;
 

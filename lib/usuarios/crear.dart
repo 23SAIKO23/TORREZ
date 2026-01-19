@@ -26,7 +26,7 @@ class _CrearUsuarioPageState extends State<CrearUsuarioPage> {
   String _tienda = 'primera';
   bool _activo = true;
 
-  final String apiUrl = 'http://192.168.0.14/puerto_evo';
+  final String apiUrl = 'http://192.168.0.29/puerto_evo';
 
   String _normalizeUsuario(String input) {
     var v = input.trim();

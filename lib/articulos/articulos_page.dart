@@ -41,7 +41,7 @@ class _ArticulosPageState extends State<ArticulosPage> {
   bool _isLoading = true;
   bool _isCreating = false;
 
-  final String _apiUrl = 'http://192.168.0.14/puerto_evo/puerto_evo';
+  final String _apiUrl = 'http://192.168.0.29/puerto_evo';
 
   int _tiendaActual = 1;
 
@@ -129,115 +129,110 @@ class _ArticulosPageState extends State<ArticulosPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Stack(
-      children: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 260),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          child: _isLoading
-              ? const Center(
-                  key: ValueKey('loading'),
-                  child: SizedBox(
-                    height: 42,
-                    width: 42,
-                    child: CircularProgressIndicator(strokeWidth: 3),
-                  ),
-                )
-              : SingleChildScrollView(
-                  key: const ValueKey('content'),
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 90),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _HeroHeader(
-                        title: 'Artículos',
-                        subtitle: 'Catálogo y control rápido',
-                        accent: const Color(0xFF14B8A6),
-                        icon: Icons.list_alt_rounded,
-                      ),
-                      const SizedBox(height: 14),
-                      _QuickStatsRow(
-                        total: _items.length,
-                        low: _countLow,
-                        critical: _countCritical,
-                      ),
-                      const SizedBox(height: 14),
-                      _SearchBar(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          setState(() => _query = value);
-                        },
-                        onClear: () {
-                          _searchController.clear();
-                          setState(() => _query = '');
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _Filters(
-                        value: _filter,
-                        onChanged: (value) {
-                          setState(() => _filter = value);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Resultados',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.4,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 220),
-                        child: _filteredItems.isEmpty
-                            ? _EmptyState(
-                                key: const ValueKey('empty'),
-                                query: _query,
-                              )
-                            : Column(
-                                key: const ValueKey('list'),
-                                children: List.generate(
-                                  _filteredItems.length,
-                                  (index) {
-                                    final item = _filteredItems[index];
-                                    return _AnimatedAppear(
-                                      index: index,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(bottom: 10),
-                                        child: _ArticuloCard(item: item),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                      ),
-                    ],
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF0F766E),
+        foregroundColor: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        onPressed: _isCreating ? null : _openCreateDialog,
+        child: _isCreating
+            ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+              )
+            : const Icon(Icons.add_rounded, size: 30),
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: _isLoading
+            ? const Center(
+                key: ValueKey('loading'),
+                child: SizedBox(
+                  height: 42,
+                  width: 42,
+                  child: CircularProgressIndicator(strokeWidth: 3),
                 ),
-        ),
-        Positioned(
-          right: 20,
-          bottom: 20,
-          child: FloatingActionButton(
-            backgroundColor: const Color(0xFF0F766E),
-            foregroundColor: Colors.white,
-            elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            onPressed: _isCreating ? null : _openCreateDialog,
-            child: _isCreating
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                  )
-                : const Icon(Icons.add_rounded, size: 30),
-          ),
-        ),
-      ],
+              )
+            : SingleChildScrollView(
+                key: const ValueKey('content'),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(0, 14, 0, 90),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HeroHeader(
+                      title: 'Artículos',
+                      subtitle: 'Catálogo y control rápido',
+                      accent: const Color(0xFF14B8A6),
+                      icon: Icons.list_alt_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    _QuickStatsRow(
+                      total: _items.length,
+                      low: _countLow,
+                      critical: _countCritical,
+                    ),
+                    const SizedBox(height: 14),
+                    _SearchBar(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() => _query = value);
+                      },
+                      onClear: () {
+                        _searchController.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _Filters(
+                      value: _filter,
+                      onChanged: (value) {
+                        setState(() => _filter = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Resultados',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.4,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: _filteredItems.isEmpty
+                          ? _EmptyState(
+                              key: const ValueKey('empty'),
+                              query: _query,
+                            )
+                          : Column(
+                              key: const ValueKey('list'),
+                              children: List.generate(
+                                _filteredItems.length,
+                                (index) {
+                                  final item = _filteredItems[index];
+                                  return _AnimatedAppear(
+                                    index: index,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: _ArticuloCard(item: item),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 
