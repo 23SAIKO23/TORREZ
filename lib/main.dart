@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'almacen/almacen_page.dart';
+import 'articulos/articulos_page.dart';
 import 'ventas/ventas_page.dart';
 import 'reporte/reporte_page.dart';
 import 'tiendas/tiendas_page.dart';
@@ -266,10 +267,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return '$dayName, $day de $month de $year';
   }
 
+  String _getCurrentSectionName() {
+    switch (_currentTabIndex) {
+      case 1:
+        return 'Inventario';
+      case 2:
+        return 'Reportes';
+      case 3:
+        return 'Articulos';
+      default:
+        return 'Ventas';
+    }
+  }
+
+  Color _getCurrentSectionAccentColor(ColorScheme colorScheme) {
+    switch (_currentTabIndex) {
+      case 1:
+        return Colors.orangeAccent;
+      case 2:
+        return Colors.purpleAccent;
+      case 3:
+        return Colors.teal;
+      default:
+        return colorScheme.primary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final sectionName = _getCurrentSectionName();
+    final sectionAccentColor = _getCurrentSectionAccentColor(colorScheme);
 
     // Datos ficticios para el ejemplo (base de todo)
     const double totalHoyTienda1 = 1520.75;
@@ -328,7 +357,7 @@ class _MyHomePageState extends State<MyHomePage> {
             gradient: LinearGradient(
               colors: [
                 const Color(0xFFFCE4EC),
-                const Color(0xFFF8BBD0).withOpacity(0.5),
+                sectionAccentColor.withOpacity(0.12),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -342,7 +371,7 @@ class _MyHomePageState extends State<MyHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Panel de ventas',
+                  'Panel de $sectionName',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: Colors.black54,
                     letterSpacing: 0.8,
@@ -353,18 +382,46 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text(
                   _getCurrentDate(),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.primary,
+                    color: sectionAccentColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  widget.title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Puerto Evo – $sectionName',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: sectionAccentColor.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: sectionAccentColor.withOpacity(0.28),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        sectionName,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: sectionAccentColor,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -377,7 +434,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.white.withOpacity(0.7),
                   boxShadow: [
                     BoxShadow(
-                      color: colorScheme.primary.withOpacity(0.2),
+                      color: sectionAccentColor.withOpacity(0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -386,7 +443,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: IconButton(
                   icon: Icon(
                     Icons.notifications_outlined,
-                    color: colorScheme.primary,
+                    color: sectionAccentColor,
                   ),
                   onPressed: () {},
                 ),
@@ -526,6 +583,8 @@ class _MyHomePageState extends State<MyHomePage> {
           totalHoy: totalHoySeleccionado,
           topProducts: topProducts,
         );
+      case 3:
+        return const ArticulosPage();
       default:
         return const SizedBox.shrink();
     }
@@ -743,7 +802,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               _CompactMenuButton(
                 icon: Icons.inventory_2,
-                title: 'Almacén',
+                title: 'Inventario',
                 color: Colors.orangeAccent,
                 onTap: () {
                   setState(() {
@@ -763,11 +822,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               _CompactMenuButton(
                 icon: Icons.list_alt,
-                title: 'Inventario',
+                title: 'Articulos',
                 color: Colors.teal,
                 onTap: () {
                   setState(() {
-                    _currentTabIndex = 1;
+                    _currentTabIndex = 3;
                   });
                 },
               ),

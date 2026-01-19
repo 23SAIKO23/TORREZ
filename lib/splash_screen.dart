@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   final List<String> apiUrls = const [
     'http://127.0.0.1/puerto_evo',
     'http://localhost/puerto_evo',
-    'http://192.168.0.224/puerto_evo',
+    'http://192.168.0.29/puerto_evo',
   ];
 
   @override
