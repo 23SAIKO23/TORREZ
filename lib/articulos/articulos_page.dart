@@ -41,7 +41,7 @@ class _ArticulosPageState extends State<ArticulosPage> {
   bool _isLoading = true;
   bool _isCreating = false;
 
-  final String _apiUrl = 'http://192.168.0.29/puerto_evo/puerto_evo';
+  final String _apiUrl = 'http://192.168.0.14/puerto_evo/puerto_evo';
 
   int _tiendaActual = 1;
 
