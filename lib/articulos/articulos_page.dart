@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'editar_articulo_page.dart';
 
 enum _ArticuloFilter { all, low, critical }
 
@@ -10,18 +11,22 @@ typedef _Tag = ({String label, Color color, IconData icon});
 
 class _ArticuloItem {
   const _ArticuloItem({
+    required this.id,
     required this.name,
     required this.barcode,
     required this.price,
     required this.stock,
+    required this.costoTotal,
     required this.tags,
     this.imageUrl,
   });
 
+  final int id;
   final String name;
   final String barcode;
   final double price;
   final int stock;
+  final double costoTotal;
   final List<_Tag> tags;
   final String? imageUrl;
 }
@@ -68,10 +73,12 @@ class _ArticulosPageState extends State<ArticulosPage> {
             // For demo, we keep simple tags
             final stock = int.tryParse(e['stock'].toString()) ?? 0;
             return _ArticuloItem(
+              id: int.tryParse(e['id_producto'].toString()) ?? 0,
               name: e['nombre_producto'],
               barcode: e['codigo_barras'],
               price: double.tryParse(e['precio'].toString()) ?? 0.0,
               stock: stock,
+              costoTotal: double.tryParse(e['costo_total'].toString()) ?? 0.0,
               imageUrl: e['imagen_url'],
               tags: stock <= 5 
                   ? [(label: 'Crítico', color: const Color(0xFFDC2626), icon: Icons.priority_high_rounded)]
@@ -222,7 +229,11 @@ class _ArticulosPageState extends State<ArticulosPage> {
                                     index: index,
                                     child: Padding(
                                       padding: const EdgeInsets.only(bottom: 10),
-                                      child: _ArticuloCard(item: item),
+                                      child: _ArticuloCard(
+                                        item: item,
+                                        onEdit: () => _openEditPage(item),
+                                        onDelete: () => _deleteArticulo(item.id, item.name),
+                                      ),
                                     ),
                                   );
                                 },
@@ -574,6 +585,104 @@ class _ArticulosPageState extends State<ArticulosPage> {
       return false;
     } finally {
       if (mounted) setState(() => _isCreating = false);
+    }
+  }
+
+  Future<void> _deleteArticulo(int id, String nombre) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Confirmar eliminación', style: TextStyle(fontWeight: FontWeight.w900)),
+          content: Text(
+            '¿Estás seguro de eliminar "$nombre"? Esta acción no se puede deshacer.',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final uri = Uri.parse('$_apiUrl/eliminar_producto.php');
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'id_producto': id}),
+      );
+
+      if (resp.statusCode != 200) {
+        throw Exception('HTTP ${resp.statusCode}: ${resp.body}');
+      }
+
+      final data = json.decode(resp.body);
+      if (data is Map && data['success'] == true) {
+        if (!mounted) return;
+        _fetchData(); // Refresh list
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Artículo eliminado correctamente'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        );
+        return;
+      }
+
+      final err = (data is Map ? data['error'] : null) ?? 'Error desconocido';
+      throw Exception(err.toString());
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al eliminar: $e'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openEditPage(_ArticuloItem item) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EditarArticuloPage(
+          id: item.id,
+          codigo: item.barcode,
+          nombre: item.name,
+          costoTotal: item.costoTotal,
+          precioVenta: item.price,
+          stock: item.stock,
+          tienda: _tiendaActual,
+          imagenUrl: item.imageUrl,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _fetchData(); // Refresh list
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Artículo actualizado correctamente'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      );
     }
   }
 }
@@ -1082,9 +1191,15 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _ArticuloCard extends StatelessWidget {
-  const _ArticuloCard({required this.item});
+  const _ArticuloCard({
+    required this.item,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final _ArticuloItem item;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   Color get _statusColor {
     if (item.stock <= 5) return const Color(0xFFEF4444);
@@ -1122,123 +1237,157 @@ class _ArticuloCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          // Left Side: Information
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                    color: Colors.black87,
-                    height: 1.2,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left Side: Information
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.qr_code_2_rounded, size: 15, color: Colors.black45),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        item.barcode,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
+                    Text(
+                      item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: Colors.black87,
+                        height: 1.2,
+                        fontSize: 16,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MiniInfo(
-                        icon: Icons.price_check_rounded,
-                        label: 'Precio',
-                        value: 'Bs ${item.price.toStringAsFixed(2)}',
-                        color: const Color(0xFF0EA5E9),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _MiniInfo(
-                        icon: Icons.inventory_2_rounded,
-                        label: 'Stock',
-                        value: '${item.stock}',
-                        color: _statusColor,
-                      ),
-                    ),
-                  ],
-                ),
-                if (item.tags.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: item.tags.map((tag) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: tag.color.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: tag.color.withOpacity(0.15)),
-                        ),
-                        child: Text(
-                          tag.label,
-                          style: TextStyle(
-                            color: tag.color,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.qr_code_2_rounded, size: 15, color: Colors.black45),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            item.barcode,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
-                      );
-                    }).toList(),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MiniInfo(
+                            icon: Icons.price_check_rounded,
+                            label: 'Precio',
+                            value: 'Bs ${item.price.toStringAsFixed(2)}',
+                            color: const Color(0xFF0EA5E9),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _MiniInfo(
+                            icon: Icons.inventory_2_rounded,
+                            label: 'Stock',
+                            value: '${item.stock}',
+                            color: _statusColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (item.tags.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: item.tags.map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: tag.color.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: tag.color.withOpacity(0.15)),
+                            ),
+                            child: Text(
+                              tag.label,
+                              style: TextStyle(
+                                color: tag.color,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Right Side: Image and Status
+              Column(
+                children: [
+                  Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.grey.shade100,
+                      border: Border.all(color: Colors.black.withOpacity(0.04)),
+                    ),
+                    child: item.imageUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              item.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_rounded, color: Colors.black26),
+                            ),
+                          )
+                        : const Icon(Icons.image_not_supported_rounded, color: Colors.black12, size: 32),
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusBadge(
+                    color: _statusColor,
+                    label: _statusLabel,
+                    icon: _statusIcon,
                   ),
                 ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          // Right Side: Image and Status
-          Column(
-            children: [
-              Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.grey.shade100,
-                  border: Border.all(color: Colors.black.withOpacity(0.04)),
-                ),
-                child: item.imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          item.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_rounded, color: Colors.black26),
-                        ),
-                      )
-                    : const Icon(Icons.image_not_supported_rounded, color: Colors.black12, size: 32),
               ),
-              const SizedBox(height: 10),
-              _StatusBadge(
-                color: _statusColor,
-                label: _statusLabel,
-                icon: _statusIcon,
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_rounded, size: 18),
+                  label: const Text('Editar', style: TextStyle(fontWeight: FontWeight.w800)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF0F766E),
+                    side: const BorderSide(color: Color(0xFF0F766E)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_rounded, size: 18),
+                  label: const Text('Eliminar', style: TextStyle(fontWeight: FontWeight.w800)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFDC2626),
+                    side: const BorderSide(color: Color(0xFFDC2626)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
             ],
           ),
